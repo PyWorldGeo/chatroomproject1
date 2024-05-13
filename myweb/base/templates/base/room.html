@@ -1,6 +1,12 @@
 {% extends 'main.html' %}
 
 {% block content %}
+    <style>
+        .room-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+        }
+    </style>
     <div class="room-container">
         <div>
             <h1>Room Page</h1>
@@ -20,7 +26,30 @@
                         <hr>
                     </div>
                 {% endfor %}
+
+                <div>
+                    {% if request.user.is_authenticated %}
+                        <div class="comment-form">
+                            <form method="POST" action="">
+                                {% csrf_token %}
+                                <input type="text" name="body" placeholder="Write message here...">
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+
             </div>
+
+        </div>
+
+        <div>
+            <h3>Participants</h3>
+            <hr>
+            {% for user in participants %}
+                <div>
+                    <p>@{{ user.username }}</p>
+                </div>
+            {% endfor %}
         </div>
 
     </div>
