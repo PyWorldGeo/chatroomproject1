@@ -10,6 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 
 # Create your views here.
 def home(request):
+
     q = request.GET.get('q') if request.GET.get('q') != None else ""
     # rooms = Room.objects.all()
     rooms = Room.objects.filter(Q(topic__name__icontains=q) | Q(name__icontains=q) | Q(description__icontains=q))
@@ -39,6 +40,7 @@ def room(request, pk):
 @login_required(login_url='login')
 def create_room(request):
     form = RoomForm()
+    topics = Topic.objects.all()
     if request.method == "POST":
         # print(request.POST)
         form = RoomForm(request.POST)
@@ -48,13 +50,14 @@ def create_room(request):
             new_room.save()
             return redirect('home')
 
-    context = {'form': form}
+    context = {'form': form, 'topics': topics}
     return render(request, 'base/room_form.html', context)
 
 @login_required(login_url='login')
 def update_room(request, pk):
     room = Room.objects.get(id=pk)
     form = RoomForm(instance=room)
+    topics = Topic.objects.all()
 
     if request.user != room.host:
         return HttpResponse("<h1>You don't have permission!</h1>")
@@ -65,7 +68,7 @@ def update_room(request, pk):
             form.save()
             return redirect('home')
 
-    context = {'form': form}
+    context = {'form': form, 'topics': topics}
     return render(request, "base/room_form.html", context)
 
 
