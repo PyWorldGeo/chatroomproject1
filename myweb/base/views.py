@@ -1,13 +1,17 @@
 from django.shortcuts import render, redirect, HttpResponse
-from .models import Room, Topic, Messages
-from .forms import RoomForm, UserForm
+from .models import Room, Topic, Messages, User
+from .forms import RoomForm, UserForm, MyUserCreationForm
 from django.db.models import Q
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+# from django.contrib.auth.forms import UserCreationForm
 
+from django.conf import settings
+from django.core.mail import send_mail
+
+from django.core.paginator import Paginator
 # Create your views here.
 def home(request):
 
@@ -15,10 +19,15 @@ def home(request):
     # rooms = Room.objects.all()
     rooms = Room.objects.filter(Q(topic__name__icontains=q) | Q(name__icontains=q) | Q(description__icontains=q))
 
+    page = Paginator(rooms, 2)
+    page_number = request.GET.get('page')
+    page = page.get_page(page_number)
+
+
     topics = Topic.objects.all()[0:5]
     room_count = rooms.count()
-    room_messages = Messages.objects.filter(Q(room__topic__name__icontains=q))
-    context = {'rooms': rooms, 'topics': topics, "room_count": room_count, "room_messages": room_messages}
+    room_messages = Messages.objects.filter(Q(room__topic__name__icontains=q))[0:3]
+    context = {'rooms': rooms, 'topics': topics, "room_count": room_count, "room_messages": room_messages, 'page': page}
     return render(request, 'base/home.html', context)
 
 def room(request, pk):
@@ -119,9 +128,9 @@ def logout_user(request):
 
 
 def register_page(request):
-    form = UserCreationForm()
+    form = MyUserCreationForm()
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = MyUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.username = user.username.lower()
@@ -146,11 +155,31 @@ def delete_message(request, pk):
 
 
 def user_profile(request, pk):
+    profile = True
     user = User.objects.get(id=pk)
     rooms = user.room_set.all()
     room_messages = user.messages_set.all()
     topics = Topic.objects.all()
-    context = {'user': user, "rooms": rooms, "room_messages": room_messages, "topics": topics}
+
+    page = Paginator(rooms, 2)
+    page_number = request.GET.get('page')
+    page = page.get_page(page_number)
+
+    if request.method == "POST":
+        info = f"""
+        Sender: {request.user.username}
+        Email: {request.user.username}
+        """
+        message = request.POST['message'] + info
+        email = user.email
+        title = request.POST['title']
+
+        send_mail(subject=title, message=message, from_email=settings.EMAIL_HOST_USER,
+                  recipient_list=[email], fail_silently=False)
+
+
+
+    context = {'user': user, "rooms": rooms, "room_messages": room_messages, "topics": topics, "page": page, "profile": profile}
     return render(request, "base/profile.html", context)
 
 
@@ -160,7 +189,7 @@ def update_user(request):
     form = UserForm(instance=user)
 
     if request.method == "POST":
-        form = UserForm(request.POST, instance=user)
+        form = UserForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
             return redirect('user-profile', pk=user.id)
@@ -172,3 +201,8 @@ def topics_page(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ""
     topics = Topic.objects.filter(name__icontains=q)
     return render(request, "base/topics.html", {'topics': topics})
+
+def activity_page(request):
+    room_messages = Messages.objects.all()
+    context = {'room_messages': room_messages}
+    return render(request, 'base/activity.html', context)

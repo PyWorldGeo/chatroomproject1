@@ -13,6 +13,14 @@ SECRET_KEY = 'django-insecure-0$bvo!3i+=)0h=x3!fabzkn&_i*f@oqfsb*82zfdy80zj^6%j!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+from .passw import password
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = "n.tsitsqishvili@gmail.com"
+EMAIL_HOST_PASSWORD = password
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 ALLOWED_HOSTS = []
 
 
@@ -25,8 +33,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'base'
+    'base',
+    'rest_framework'
 ]
+
+AUTH_USER_MODEL = 'base.User'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -64,8 +76,12 @@ WSGI_APPLICATION = 'myweb.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'chatroom1',
+        'USER': 'root',
+        'PASSWORD': 'DjagaDjango2024.',
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
 
@@ -105,10 +121,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = '/images/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
+
+MEDIA_ROOT = BASE_DIR / 'static/images'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

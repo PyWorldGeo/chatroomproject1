@@ -15,12 +15,12 @@
             </a>
           </div>
 
-          {% for room in rooms %}
+          {% for room in page %}
             <div class="roomListRoom">
             <div class="roomListRoom__header">
               <a href="{% url 'user-profile' room.host.id %}" class="roomListRoom__author">
                 <div class="avatar avatar--small">
-                  <img src="https://randomuser.me/api/portraits/women/11.jpg" />
+                  <img src="{{ room.host.avatar.url }}" />
                 </div>
                 <span>@{{ room.host.username }}</span>
               </a>
@@ -57,6 +57,37 @@
             </div>
           </div>
           {% endfor %}
+
+          <div>
+            <p>Page: {{page.number}}/{{page.paginator.num_pages}}</p>
+            <nav aria-label="Page navigation example">
+              <ul class="pagination">
+                {% if page.has_previous %}
+                  {% if profile %}
+                    <li class="page-item"><a class="page-link" href="{% url 'user-profile' user.id %}?page={{page.previous_page_number}}">Previous</a></li>
+                  {% else %}
+                    <li class="page-item"><a class="page-link" href="{% url 'home' %}?page={{page.previous_page_number}}">Previous</a></li>
+                  {% endif %}
+                {% endif %}
+
+
+                {% for num_page in page.paginator.page_range %}
+
+                  {% if profile %}
+                    <li class="page-item"><a class="page-link" href="{% url 'user-profile' user.id %}?page={{num_page}}">{{num_page}}</a></li>
+                  {% else %}
+                    <li class="page-item"><a class="page-link" href="{% url 'home' %}?page={{num_page}}">{{num_page}}</a></li>
+                  {% endif %}
+
+                {% endfor %}
+
+
+                {% if page.has_next %}
+                  <li class="page-item"><a class="page-link" href="{% url 'user-profile' user.id %}?page={{page.next_page_number}}">Next</a></li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
 
 </div>
 

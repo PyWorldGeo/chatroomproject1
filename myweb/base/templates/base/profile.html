@@ -2,6 +2,7 @@
 
 {% block content %}
 
+
 <main class="profile-page layout layout--3">
     <div class="container">
       <!-- Topics Start -->
@@ -13,7 +14,7 @@
         <div class="profile">
           <div class="profile__avatar">
             <div class="avatar avatar--large active">
-              <img src="https://randomuser.me/api/portraits/men/11.jpg" />
+              <img src="{{user.avatar.url }}" />
             </div>
           </div>
           <div class="profile__info">
@@ -31,6 +32,20 @@
               accusamus repudiandae quis ab ex exercitationem rem?
             </p>
           </div>
+          <br>
+          {% if request.user.is_authenticated %}
+            <div class="send_mail">
+              <h1> Send Feedback to {{ user.username }} </h1>
+              <form action="" method="POST">
+                {% csrf_token %}
+                <h2>Title:</h2>
+                <input type="text" name="title" placeholder="Enter Title...">
+                <h2>Message:</h2>
+                <textarea name="message" placeholder="Enter Message..."></textarea>
+                <input type="submit">
+              </form>
+            </div>
+          {% endif %}
         </div>
 
         <div class="roomList__header">
